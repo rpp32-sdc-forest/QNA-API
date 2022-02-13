@@ -24,14 +24,16 @@ module.exports = {
         ) x
       ) as answers
     from questions
-    where product_id = $1;
+    where product_id = $1 and questions.reported = false;
   `,
 
   updateQuestionHelpful: `
-
+    update questions
+    set helpful = helpful + 1 where question_id = $1;
   `,
   updateAnswerHelpful: `
-
+    update answers
+    set helpful = helpful + 1 where answer_id = $1;
   `,
   postNewAnswer: `
     insert into answers (
@@ -46,41 +48,31 @@ module.exports = {
     VALUES ($1, $2, $3, $4, false, 0, CURRENT_TIMESTAMP)
     returning *;
   `,
-  postNewQuestion:`
-  insert into questions (
-    product_id,
-    body,
-    asker_name,
-    asker_email,
-    reported,
-    helpful,
-    question_date
-  )
-  VALUES ($1, $2, $3, $4, false, 0, CURRENT_TIMESTAMP);
+  postNewQuestion: `
+    insert into questions (
+      product_id,
+      body,
+      asker_name,
+      asker_email,
+      reported,
+      helpful,
+      question_date
+   )
+    VALUES ($1, $2, $3, $4, false, 0, CURRENT_TIMESTAMP);
 `,
- postPhotos:`
- insert into answers_photos (
-    answer_id,
-    photo_url
-  )
-  VALUES ($1, $2)
+  postPhotos: `
+    insert into answers_photos (
+        answer_id,
+        photo_url
+      )
+      VALUES ($1, $2)
+ `,
+  reportQuestion: `
+    update questions
+    set reported = true where question_id = $1;
+ `,
+  reportAnswer: `
+    update answers
+    set reported = true where answer_id = $1;
  `
 }
-
-//    WHERE product_id=$1 AND reported=false;
-// SELECT
-//       *
-//     FROM answers
-//     WHERE answer_id=(SELECT max(answer_id) FROM answers) ;
-
-// SELECT
-// *
-// FROM questions
-// WHERE question_id=(SELECT min(question_id) FROM questions) ;
-// `,
-
-// SELECT
-//       *
-//     FROM answers_photos
-//     WHERE photo_id=(SELECT max(photo_id) FROM answers_photos) ;
-//     `,

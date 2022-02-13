@@ -10,7 +10,7 @@ const pool = new Pool({
 });
 
 const getQuestionsNAnswers = (productId, callback) => {
-  (async() => {
+  (async () => {
     const client = await pool.connect()
     try {
       const result = await client.query(query.getQuestions, [productId]);
@@ -26,7 +26,7 @@ const getQuestionsNAnswers = (productId, callback) => {
 
 
 const postQuestion = (productId, body, name, email, callback) => {
-  (async() => {
+  (async () => {
     const client = await pool.connect()
     try {
       const result = await client.query(query.postNewQuestion, [productId, body, name, email]);
@@ -40,7 +40,7 @@ const postQuestion = (productId, body, name, email, callback) => {
 };
 
 const postAnswer = (questionId, body, name, email, callback) => {
-  (async() => {
+  (async () => {
     const client = await pool.connect()
     try {
       const result = await client.query(query.postNewAnswer, [questionId, body, name, email]);
@@ -54,7 +54,7 @@ const postAnswer = (questionId, body, name, email, callback) => {
 };
 
 const postPhotos = (answerId, photos, callback) => {
-  (async() => {
+  (async () => {
     const client = await pool.connect()
     try {
       const result = await client.query(query.postPhotos, [answerId, photos]);
@@ -68,19 +68,59 @@ const postPhotos = (answerId, photos, callback) => {
 };
 
 const reportAnswer = (answerId, callback) => {
-
+  (async () => {
+    const client = await pool.connect()
+    try {
+      const result = await client.query(query.reportAnswer, [answerId]);
+      callback(null, result);
+    } finally {
+      client.release();
+    }
+  })().catch((err) => {
+    console.log(err.stack)
+  })
 };
 
 const reportQuestion = (questionId, callback) => {
-
+  (async () => {
+    const client = await pool.connect()
+    try {
+      const result = await client.query(query.reportQuestion, [questionId]);
+      callback(null, result);
+    } finally {
+      client.release();
+    }
+  })().catch((err) => {
+    console.log(err.stack)
+  })
 };
 
 const questionHelpful = (questionId, callback) => {
-
+  (async () => {
+    const client = await pool.connect()
+    try {
+      const result = await client.query(query.updateQuestionHelpful, [questionId]);
+      callback(null, result);
+    } finally {
+      client.release();
+    }
+  })().catch((err) => {
+    console.log(err.stack)
+  })
 };
 
 const answerHelpful = (answerId, callback) => {
-
+  (async () => {
+    const client = await pool.connect()
+    try {
+      const result = await client.query(query.updateAnswerHelpful, [answerId]);
+      callback(null, result);
+    } finally {
+      client.release();
+    }
+  })().catch((err) => {
+    console.log(err.stack)
+  })
 };
 
 
