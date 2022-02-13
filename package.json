@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon ./server/index.js",
     "test": "jest",
-    "createDB": "sudo -u postgres psql < database/schema.sql"
+    "coverage": "npx jest --coverage",
+    "db": "sudo -u postgres psql < database/schema.sql"
   },
   "repository": {
     "type": "git",
