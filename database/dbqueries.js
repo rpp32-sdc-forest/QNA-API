@@ -24,7 +24,8 @@ module.exports = {
         ) x
       ) as answers
     from questions
-    where product_id = $1 and questions.reported = false;
+    where product_id = $1 and questions.reported = false
+    offset $2 rows fetch next $3 rows only;
   `,
 
   updateQuestionHelpful: `

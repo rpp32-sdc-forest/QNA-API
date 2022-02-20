@@ -10,21 +10,26 @@ app.use(express.json());
 // get all questions and answers
 app.get('/qa/questions/:id', async (req, res) => {
   const productId = req.params.id;
-  queries.getQuestionsNAnswers(productId, (err, response) => {
+  const page = req.query.page || 0;
+  const count = req.query.count || 5;
+  const offset = page * count;
+  queries.getQuestionsNAnswers(productId, offset, count, (err, response) => {
     if (err) {
       res.status(400).send('get question error');
-    } else {
+    } else if (!response.rows.length) {
+      res.status(400).send('invalid productId');
+    }else {
       const result = { product_id: productId, results: response.rows };
-      res.send(result);
+      res.status(200).send(result);
     }
   });
 });
 // post question
-app.post('/qa/questions/:id', async (req, res) => {
-  const productId = req.body.product_id;
-  const body = req.body.body;
-  const name = req.body.name;
-  const email = req.body.email;
+app.post('/qa/questions/', async (req, res) => {
+  const productId = req.query.product_id;
+  const body = req.query.body;
+  const name = req.query.name;
+  const email = req.query.email;
   queries.postQuestion(productId, body, name, email, (err, response) => {
     if (err) {
       res.status(400).send('post question error');
@@ -34,12 +39,12 @@ app.post('/qa/questions/:id', async (req, res) => {
   });
 });
 // post answer
-app.post('/qa/answers/:id', async (req, res) => {
-  const questionId = req.body.id;
-  const body = req.body.body;
-  const name = req.body.name;
-  const email = req.body.email;
-  const photos = req.body.photos || [];
+app.post('/qa/questions/:id/answers/', async (req, res) => {
+  const questionId = req.query.id;
+  const body = req.query.body;
+  const name = req.query.name;
+  const email = req.query.email;
+  const photos = req.query.photos || [];
   await queries.postAnswer(questionId, body, name, email, async (err, response) => {
     if (err) {
       res.status(400).send('post answer error');
@@ -112,3 +117,5 @@ app.put('/qa/answers/:id/report', async (req, res) => {
 app.listen(port, () => {
   console.log(`server is listening on port ${port}`);
 })
+
+module.exports = app;

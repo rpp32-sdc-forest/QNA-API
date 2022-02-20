@@ -9,11 +9,11 @@ const pool = new Pool({
   port: 5432
 });
 
-const getQuestionsNAnswers = (productId, callback) => {
+const getQuestionsNAnswers = (productId, page, count, callback) => {
   (async () => {
     const client = await pool.connect()
     try {
-      const result = await client.query(query.getQuestions, [productId]);
+      const result = await client.query(query.getQuestions, [productId, page, count]);
       callback(null, result);
     } finally {
       client.release();
@@ -133,6 +133,7 @@ pool.on('error', (err, client) => {
 });
 
 module.exports = {
+  pool,
   getQuestionsNAnswers,
   postQuestion,
   postAnswer,
