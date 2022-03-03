@@ -1,12 +1,13 @@
 const { Pool, Client } = require('pg');
 const query = require('./dbqueries.js');
+require('dotenv').config();
 
 const pool = new Pool({
-  user: 'postgres',
-  password: 'alan',
-  database: 'qna',
-  host: 'localhost',
-  port: 5432
+  user: process.env.pgUser,
+  password: process.env.pgPassword,
+  database: process.env.pgDB,
+  host: process.env.pgHost,
+  port: process.env.pgPort,
 });
 
 const getQuestionsNAnswers = (productId, page, count, callback) => {
