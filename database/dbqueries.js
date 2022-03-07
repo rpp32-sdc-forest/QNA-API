@@ -25,6 +25,7 @@ module.exports = {
       ) as answers
     from questions
     where product_id = $1 and questions.reported = false
+    order by question_id DESC
     offset $2 rows fetch next $3 rows only;
   `,
 
