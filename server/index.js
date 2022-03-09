@@ -6,7 +6,7 @@ const queries = require('../database/pg.js');
 const Redis = require('redis');
 const redis = require('redis');
 const client = redis.createClient('redis://127.0.0.1:6379');
-const default_expiration = 60;
+const default_expiration = 1;
 const port = 3001;
 app.use(cors());
 app.use(express.json());
@@ -30,7 +30,7 @@ app.get('/qna/getQuestionsList/', async (req, res) => {
   const offset = page * count;
   const cache = await client.get(`qna:${productId}`)
   if (cache) {
-    console.log('cache hit')
+    console.log('cache hit:')
     res.send(JSON.parse(cache))
   } else {
     try {
@@ -38,24 +38,25 @@ app.get('/qna/getQuestionsList/', async (req, res) => {
         if (err) {
           res.status(400).send('get question error');
         } else {
-          console.log('cache miss')
           const result = { product_id: productId, results: response.rows };
-          await client.setEx(`qna:${productId}`, default_expiration,JSON.stringify(result));
+          await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
+          console.log('cache miss:');
           res.status(200).send(result);
         }
       });
     } catch(error) {
       console.error(error);
-      res.json({data: error});
+      res.send({data: error});
     }
   }
 });
-// post question
-app.post('/qna/questions/:id/:body/:name/:email', async (req, res) => {
-  const productId = req.params.id;
-  const body = req.params.body;
-  const name = req.params.name;
-  const email = req.params.email;
+// post question :id/:body/:name/:email
+app.post('/qna/questions/', async (req, res) => {
+  const productId = req.body.body.id;
+  const body = req.body.body.body;
+  const name = req.body.body.name;
+  const email = req.body.body.email;
+  console.log('post new Q:', productId, body, name, email)
   queries.postQuestion(productId, body, name, email, (err, response) => {
     if (err) {
       res.status(400).send('post question error');
@@ -67,11 +68,12 @@ app.post('/qna/questions/:id/:body/:name/:email', async (req, res) => {
 // post answer
 // /:body/:name/:email/:photos/
 app.post('/qna/answers', async (req, res) => {
-  const questionId = req.body.params.id;
-  const body = req.body.params.body;
-  const name = req.body.params.name;
-  const email = req.body.params.email;
-  const photos = req.body.params.photos || [];
+  console.log('post new answe:', req.body)
+  const questionId = req.body.id;
+  const body = req.body.body;
+  const name = req.body.name;
+  const email = req.body.email;
+  const photos = req.body.photos || [];
   await queries.postAnswer(questionId, body, name, email, async (err, response) => {
     if (err) {
       res.status(400).send('post answer error');
@@ -113,6 +115,7 @@ app.put('/qna/answers/:id/helpful', async (req, res) => {
 });
 // report question
 app.put('/qna/questions/:id/report', async (req, res) => {
+  console.log('report question:', req.params)
   const questionId = req.params.id;
   queries.reportQuestion(questionId, (err, response) => {
     if (err) {
