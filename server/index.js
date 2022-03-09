@@ -3,52 +3,66 @@ const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
 const queries = require('../database/pg.js');
-const Redis = require('redis');
-const redis = require('redis');
-const client = redis.createClient('redis://127.0.0.1:6379');
-const default_expiration = 1;
+// const redis = require('redis');
+// const client = redis.createClient('redis://127.0.0.1:6379');
+const default_expiration = 172800;
 const port = 3001;
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false, type: 'application/x-www-form-urlencoded'}));
-app.use((req,res,next)=>{
-  console.log('request comes in:', req.path);
-  next();
-})
-client.connect();
-client.on("error", function(err){
-  console.error("Errro encountered: ", err);
-});
-client.on('connect', function(err) {
-  console.log('connected redis');
-})
+// app.use((req,res,next)=>{
+//   console.log('request comes in:', req.path);
+//   next();
+// })
+// client.connect();
+// client.on("error", function(err){
+//   console.error("Errro encountered: ", err);
+// });
+// client.on('connect', function(err) {
+//   console.log('connected redis');
+// })
 // get all questions and answers
+// app.get('/qna/getQuestionsList/', async (req, res) => {
+//   const productId = req.query.id;
+//   const page = req.query.page || 0;
+//   const count = req.query.count || 5;
+//   const offset = page * count;
+//   const cache = await client.get(`qna:${productId}`)
+//   console.log('productId:', req.params, req.query,req.body)
+//   if (cache) {
+//     console.log('cache hit:')
+//     res.send(JSON.parse(cache))
+//   } else {
+//     try {
+//       queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
+//         if (err) {
+//           res.status(400).send('get question error');
+//         } else {
+//           const result = { product_id: productId, results: response.rows };
+//           await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
+//           console.log('cache miss:');
+//           res.status(200).send(result);
+//         }
+//       });
+//     } catch(error) {
+//       console.error(error);
+//       res.send({data: error});
+//     }
+//   }
+// });
 app.get('/qna/getQuestionsList/', async (req, res) => {
   const productId = req.query.id;
   const page = req.query.page || 0;
   const count = req.query.count || 5;
   const offset = page * count;
-  const cache = await client.get(`qna:${productId}`)
-  if (cache) {
-    console.log('cache hit:')
-    res.send(JSON.parse(cache))
-  } else {
-    try {
-      queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
-        if (err) {
-          res.status(400).send('get question error');
-        } else {
-          const result = { product_id: productId, results: response.rows };
-          await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
-          console.log('cache miss:');
-          res.status(200).send(result);
-        }
-      });
-    } catch(error) {
-      console.error(error);
-      res.send({data: error});
+  queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
+    if (err) {
+      res.status(400).send('get question error');
+    } else {
+      const result = { product_id: productId, results: response.rows };
+      res.status(200).send(result);
     }
-  }
+  });
 });
 // post question :id/:body/:name/:email
 app.post('/qna/questions/', async (req, res) => {
@@ -137,11 +151,6 @@ app.put('/qna/answers/:id/report', async (req, res) => {
     }
   });
 });
-
-
-
-
-
 
 
 app.listen(port, () => {
