@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-  vus: 100,
-  duration: '10s',
+  vus: 10,
+  duration: '5s',
 };
 
 export default function () {
@@ -16,9 +16,11 @@ export default function () {
   var params = {
     headers: {
       'Content-Type': 'application/json',
+      'accept':'application/json'
     },
+    params: {id:64620}
   };
-  const res = http.get('http://localhost:3001/qna/getQuestionsList', payload, params);
+  const res = http.get('http://localhost:3001/qna/getQuestionsList',params);
   check(res, { 'status was 200': (r) => r.status == 200 });
   sleep(1);
 }
