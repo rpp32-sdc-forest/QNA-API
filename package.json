@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./server/index.js",
+    "pm": "pm2 start ./server/index.js",
+    "pms": "pm2 stop ./server/index.js",
     "test": "jest --detectOpenHandles",
     "coverage": "npx jest --coverage",
     "db": "sudo -u postgres psql < database/schema.sql"
@@ -26,6 +28,7 @@
     "express": "^4.17.2",
     "nodemon": "^2.0.15",
     "pg": "^8.7.1",
+    "pm2": "^5.2.0",
     "redis": "^4.0.4",
     "supertest": "^6.2.2"
   },
