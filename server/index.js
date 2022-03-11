@@ -3,8 +3,8 @@ const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
 const queries = require('../database/pg.js');
-// const redis = require('redis');
-// const client = redis.createClient('redis://127.0.0.1:6379');
+const redis = require('redis');
+const client = redis.createClient('redis://127.0.0.1:6379');
 const default_expiration = 172800;
 const port = 3001;
 const loader = require('./loaderio-76817db9eb33e7fd6eb890147a07f381.txt');
@@ -15,63 +15,63 @@ app.use(bodyParser.urlencoded({extended: false, type: 'application/x-www-form-ur
 app.get(`/loaderio-76817db9eb33e7fd6eb890147a07f381/`, (req, res) => {
 	  res.send(loader);
 });
-// app.get(`/loaderio-c6f3708248ab1936283eb6ae33f68380/`, (req, res) => {
-//   res.send(loader);
-// });
-// app.use((req,res,next)=>{
-//   console.log('request comes in:', req.path);
-//   next();
-// })
-// client.connect();
-// client.on("error", function(err){
-//   console.error("Errro encountered: ", err);
-// });
-// client.on('connect', function(err) {
-//   console.log('connected redis');
-// })
-// //get all questions and answers
-// app.get('/qna/getQuestionsList/', async (req, res) => {
-//   const productId = req.query.id;
-//   const page = req.query.page || 0;
-//   const count = req.query.count || 5;
-//   const offset = page * count;
-//   const cache = await client.get(`qna:${productId}`)
-//   console.log('productId:', req.params, req.query,req.body)
-//   if (cache) {
-//     console.log('cache hit:')
-//     res.send(JSON.parse(cache))
-//   } else {
-//     try {
-//       queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
-//         if (err) {
-//           res.status(400).send('get question error');
-//         } else {
-//           const result = { product_id: productId, results: response.rows };
-//           await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
-//           console.log('cache miss:');
-//           res.status(200).send(result);
-//         }
-//       });
-//     } catch(error) {
-//       console.error(error);
-//       res.send({data: error});
-//     }
-//   }
-// });
+app.get(`/loaderio-c6f3708248ab1936283eb6ae33f68380/`, (req, res) => {
+  res.send(loader);
+});
+app.use((req,res,next)=>{
+  console.log('request comes in:', req.path);
+  next();
+})
+client.connect();
+client.on("error", function(err){
+  console.error("Errro encountered: ", err);
+});
+client.on('connect', function(err) {
+  console.log('connected redis');
+})
+//get all questions and answers
 app.get('/qna/getQuestionsList/', async (req, res) => {
   const productId = req.query.id;
   const page = req.query.page || 0;
   const count = req.query.count || 5;
   const offset = page * count;
-  queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
-    if (err) {
-      res.status(400).send('get question error');
-    } else {
-      const result = { product_id: productId, results: response.rows };
-      res.status(200).send(result);
+  const cache = await client.get(`qna:${productId}`)
+  console.log('productId:', req.params, req.query,req.body)
+  if (cache) {
+    console.log('cache hit:')
+    res.send(JSON.parse(cache))
+  } else {
+    try {
+      queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
+        if (err) {
+          res.status(400).send('get question error');
+        } else {
+          const result = { product_id: productId, results: response.rows };
+          await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
+          console.log('cache miss:');
+          res.status(200).send(result);
+        }
+      });
+    } catch(error) {
+      console.error(error);
+      res.send({data: error});
     }
-  });
+  }
 });
+// app.get('/qna/getQuestionsList/', async (req, res) => {
+//   const productId = req.query.id;
+//   const page = req.query.page || 0;
+//   const count = req.query.count || 5;
+//   const offset = page * count;
+//   queries.getQuestionsNAnswers(productId, offset, count, async(err, response) => {
+//     if (err) {
+//       res.status(400).send('get question error');
+//     } else {
+//       const result = { product_id: productId, results: response.rows };
+//       res.status(200).send(result);
+//     }
+//   });
+// });
 // post question :id/:body/:name/:email
 app.post('/qna/questions/', async (req, res) => {
   const productId = req.body.body.id;
