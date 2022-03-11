@@ -1,1 +1,0 @@
-module.exports = 'loaderio-c6f3708248ab1936283eb6ae33f68380';
