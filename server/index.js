@@ -3,8 +3,33 @@ const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
 const queries = require('../database/pg.js');
-const redis = require('redis');
-const client = redis.createClient();
+const Redis = require('ioredis');
+const cluster = new Redis.Cluster([
+  {
+    port: 6379,
+    host: "172.31.90.250",
+  },
+  {
+    port: 6379,
+    host: "172.31.86.206",
+  },
+ {
+    port: 6379,
+    host: "172.31.87.38",
+  },
+  {
+    port: 6379,
+    host: "172.31.82.254",
+  },
+ {
+    port: 6379,
+    host: "172.31.22.83",
+  },
+  {
+    port: 6379,
+    host: "172.31.25.104",
+  },
+]);
 const default_expiration = 172800;
 const port = 3001;
 const loader = require('./loaderio-76817db9eb33e7fd6eb890147a07f381.txt');
@@ -15,27 +40,21 @@ app.get(`/loaderio-76817db9eb33e7fd6eb890147a07f381/`, (req, res) => {
 	  res.send(loader);
 });
 
-app.use((req,res,next)=>{
-  console.log('request comes in:', req.path);
-  next();
-})
-client.connect();
-client.on("error", function(err){
-  console.error("Errro encountered: ", err);
-});
-client.on('connect', function(err) {
-  console.log('connected redis');
-})
+//app.use((req,res,next)=>{
+ // console.log('request comes in:', req.path);
+ // next();
+//})
+
 //get all questions and answers
 app.get('/qna/getQuestionsList/', async (req, res) => {
   const productId = req.query.id;
   const page = req.query.page || 0;
   const count = req.query.count || 5;
   const offset = page * count;
-  const cache = await client.get(`qna:${productId}`)
+  const cache = await cluster.get(`qna:${productId}`)
   console.log('productId:', req.params, req.query,req.body)
   if (cache) {
-    console.log('cache hit:')
+   // console.log('cache hit:')
     res.send(JSON.parse(cache))
   } else {
     try {
@@ -44,8 +63,8 @@ app.get('/qna/getQuestionsList/', async (req, res) => {
           res.status(400).send('get question error');
         } else {
           const result = { product_id: productId, results: response.rows };
-          await client.setEx(`qna:${productId}`,default_expiration,JSON.stringify(result));
-          console.log('cache miss:');
+          await cluster.set(`qna:${productId}`,JSON.stringify(result));
+         // console.log('cache miss:');
           res.status(200).send(result);
         }
       });
