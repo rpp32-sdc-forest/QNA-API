@@ -4,20 +4,17 @@ const app = express();
 const cors = require('cors');
 const queries = require('../database/pg.js');
 const redis = require('redis');
-const client = redis.createClient('redis://127.0.0.1:6379');
+const client = redis.createClient();
 const default_expiration = 172800;
 const port = 3001;
 const loader = require('./loaderio-76817db9eb33e7fd6eb890147a07f381.txt');
-// const loader = require('./loaderio-c6f3708248ab1936283eb6ae33f68380.txt');
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false, type: 'application/x-www-form-urlencoded'}));
 app.get(`/loaderio-76817db9eb33e7fd6eb890147a07f381/`, (req, res) => {
 	  res.send(loader);
 });
-app.get(`/loaderio-c6f3708248ab1936283eb6ae33f68380/`, (req, res) => {
-  res.send(loader);
-});
+
 app.use((req,res,next)=>{
   console.log('request comes in:', req.path);
   next();
