@@ -45,6 +45,18 @@ app.get(`/loaderio-76817db9eb33e7fd6eb890147a07f381/`, (req, res) => {
  // next();
 //})
 
+// app.use((req,res,next)=>{
+//   console.log('request comes in:', req.path);
+//   next();
+// })
+// client.connect();
+// client.on("error", function(err){
+//   console.error("Errro encountered: ", err);
+// });
+// client.on('connect', function(err) {
+//   console.log('connected redis');
+// })
+
 //get all questions and answers
 app.get('/qna/getQuestionsList/', async (req, res) => {
   const productId = req.query.id;
@@ -54,7 +66,7 @@ app.get('/qna/getQuestionsList/', async (req, res) => {
   const cache = await cluster.get(`qna:${productId}`)
   console.log('productId:', req.params, req.query,req.body)
   if (cache) {
-   // console.log('cache hit:')
+   // console.log('cache hit');
     res.send(JSON.parse(cache))
   } else {
     try {
@@ -64,7 +76,7 @@ app.get('/qna/getQuestionsList/', async (req, res) => {
         } else {
           const result = { product_id: productId, results: response.rows };
           await cluster.set(`qna:${productId}`,JSON.stringify(result));
-         // console.log('cache miss:');
+         // console.log('cache miss');
           res.status(200).send(result);
         }
       });
