@@ -30,15 +30,11 @@ const cluster = new Redis.Cluster([
     host: "172.31.25.104",
   },
 ]);
-const default_expiration = 172800;
 const port = 3001;
-const loader = require('./loaderio-76817db9eb33e7fd6eb890147a07f381.txt');
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false, type: 'application/x-www-form-urlencoded'}));
-app.get(`/loaderio-76817db9eb33e7fd6eb890147a07f381/`, (req, res) => {
-	  res.send(loader);
-});
+
 
 //app.use((req,res,next)=>{
  // console.log('request comes in:', req.path);
